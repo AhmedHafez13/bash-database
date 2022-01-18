@@ -4,21 +4,11 @@
 # _____ * _____AH DATABASE MANAGMENT SYSTEM  _____ * _____ #
 
 # _____ * _____ MAIN SCRIPT  _____ * _____ #
-mkdir AHDB 2 >> ./AHDB/error.log
+mkdir AHDB 2>> ./AHDB/.error.log
 clear
 echo "Welcome to AH-DBMS"
 createMainMenu
 # _____ * _____ END OF MAIN SCRIPT  _____ * _____ #
-
-
-
-
-
-
-
-
-
-
 
 # Create main Menu Function
 function createMainMenu 
@@ -45,16 +35,22 @@ function createMainMenu
       3)  connectToDB ;;
       4)  dropDB ;;
       5)  exit ;;
-      *)  echo "Please select a correct number from the given menu;" createMainMenu;
+      *)  echo "Please select a correct number from the given menu"; createMainMenu;
     esac
 }
 
-
 # a function that create a database as a folder relative to the script
-# function createDB 
-# {
-#   echo -e "Please Enter the database name: \c";
-#   read dbName;
-#   mkdir ./
+function createDB 
+{
+  echo -e "Please Enter the database name: \c";
+  read dbName;
+  mkdir ./AHDB/$dbName
+  if [[ $? == 0 ]]
+  then
+    echo "$dbName Database Created Successfully"
+  else
+    echo "Error Creating the database $dbName"
+  fi
+  createMainMenu
+}
 
-# }
