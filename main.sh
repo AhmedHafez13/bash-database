@@ -118,20 +118,22 @@ function createTableMenu()
     echo "6) Delete From Table";
     echo "7) Update Table";
     echo "8) clear Screen"; 
-    echo "9) Exit";
+    echo "9) Return to Main Menu";
+    echo "10) Exit";
     echo "===========================================";
     echo -e "Please Enter your choice: \c"
     read ch
     case $ch in
-      1)  createTable ;;
-      2)  listTables ;;
-      3)  dropTable ;;
-      4)  insertIntoTable ;;
-      5)  selectFromTable ;;
-      6)  deleteFromTable ;;
-      7)  updateTable ;;
-      8)  clearTableScreen ;;
-      9)  exit ;;
+      1)  createTable $1;;
+      2)  listTables $1;;
+      3)  dropTable $1;;
+      4)  insertIntoTable $1;;
+      5)  selectFromTable $1;;
+      6)  deleteFromTable $1;;
+      7)  updateTable $1;;
+      8)  clearTableScreen $1;;
+      9)  returnToMainMenu ;;
+      10)  exit ;;
       *)  echo "Please select a correct number from the given menu";createMainMenu;
     esac
 }
@@ -139,52 +141,82 @@ function createTableMenu()
 # _____ * _____ Table Menu Functions  _____ * _____ #
 
 # a function that create a file for the table
-function createTable
-{
-  #todo
-  # notes-from-project-instructions:
-    # 1- Ask about columns datatypes in create table and check on them in both insert and update
-    # 2- Ask about primary key in create table and check for it in the insert into table
+# function createTable
+# {
+#   #todo
+#   # notes-from-project-instructions:
+#     # 1- Ask about columns datatypes in create table and check on them in both insert and update
+#     # 2- Ask about primary key in create table and check for it in the insert into table
+#   echo -e "Please Enter Table Name: \c";
+#   read tableName;
+#   if [[ -f $tableName ]]
+#     echo "Sorry table already exists!!";
+#     createTableMenu;
+#   fi
+#   echo -e ""
 
-}
+
+# }
 
 # a function that list the tables in the database directory
 function listTables
 {
-  #todo
+  ls .;
+  createTableMenu $1;
 }
 
 function dropTable
 {
-  #todo
+  echo -e "Please Enter Table Name: \c";
+  read tableName;
+  if [[ -f $tableName ]]
+  then
+    rm -rf ./$tableName 2>>./.error.log;
+    if [[ $? == 0 ]]
+    then
+      echo "$tableName Table Dropped Successfuly";
+    fi
+  else
+    echo "Their is no Table with this Name!!";
+  fi
+  createTableMenu $1;
 }
 
-function insertIntoTable
-{
-  #todo
-}
+# function insertIntoTable
+# {
+#   #todo
+# }
 
-function selectFromTable
-{
-  # todo
-  # note-from-project-instructions:
-  # The Select of Rows displayed in screen/terminal in an Accepted/Good Format
-}
+# function selectFromTable
+# {
+#   # todo
+#   # note-from-project-instructions:
+#   # The Select of Rows displayed in screen/terminal in an Accepted/Good Format
+# }
 
-function deleteFromTable
-{
-  #todo
-}
+# function deleteFromTable
+# {
+#   #todo
+# }
 
-function updateTable
+# function updateTable
+# {
+#   #todo
+# }
+
+
+# A function that return to the main menu
+function returnToMainMenu
 {
-  #todo
+  clear;
+  cd ../../ 2>>./error.log;
+  createMainMenu;
 }
 
 # A function that clear a table screen
 function clearTableScreen
 {
   clear;
-  createTableMenu;
+  createTableMenu $1;
 }
 # _____ * _____ End of Table Menu Functions  _____ * _____ #
