@@ -5,7 +5,7 @@
 
 # _____ * _____ MAIN SCRIPT  _____ * _____ #
 #Ayman Hafez Data base
-mkdir AHDB 2>> ./AHDB/.error.log
+mkdir ./AHDB 2>> ./.error.log
 clear
 echo "Welcome to AH-DBMS"
 createMainMenu
@@ -46,6 +46,7 @@ function createDB
   else
     echo "Error Creating the database $dbName"
   fi
+  echo "==========================================";
   createMainMenu
 }
 
