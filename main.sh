@@ -4,11 +4,13 @@
 # _____ * _____AH DATABASE MANAGMENT SYSTEM  _____ * _____ #
 
 # _____ * _____ MAIN SCRIPT  _____ * _____ #
+
 # AHDB stands for => Ayman Hafez Data base
 mkdir ./AHDB 2>> ./.error.log
 clear
 echo "Welcome to AH-DBMS"
-createMainMenu
+
+# calling the mainMenu Function in the end of the script
 # _____ * _____ END OF MAIN SCRIPT  _____ * _____ #
 
 # Create main Menu Function
@@ -105,20 +107,20 @@ function clearScreen
 
 
 # Create Table Menu Function
-function createTableMenu()
+function createTableMenu
 {
-    echo    "===========================================";
+    echo "===========================================";
     echo -e "#____*____ * $1 Database Menu * ____*____ #";
     
-    echo "1) Create Table";
-    echo "2) List Tables";
-    echo "3) Drop Table";
-    echo "4) Insert Into Table";
-    echo "5) Select From Table";
-    echo "6) Delete From Table";
-    echo "7) Update Table";
-    echo "8) clear Screen"; 
-    echo "9) Return to Main Menu";
+    echo "01) Create Table";
+    echo "02) List Tables";
+    echo "03) Drop Table";
+    echo "04) Insert Into Table";
+    echo "05) Select From Table";
+    echo "06) Delete From Table";
+    echo "07) Update Table";
+    echo "08) clear Screen"; 
+    echo "09) Return to Main Menu";
     echo "10) Exit";
     echo "===========================================";
     echo -e "Please Enter your choice: \c"
@@ -140,7 +142,7 @@ function createTableMenu()
 
 # _____ * _____ Table Menu Functions  _____ * _____ #
 
-# a function that create a file for the table
+#a function that create a file for the table
 # function createTable
 # {
 #   #todo
@@ -151,7 +153,7 @@ function createTableMenu()
 #   read tableName;
 #   if [[ -f $tableName ]]
 #     echo "Sorry table already exists!!";
-#     createTableMenu;
+#     createTableMenu $1;
 #   fi
 #   echo -e ""
 
@@ -184,7 +186,7 @@ function dropTable
 
 # function insertIntoTable
 # {
-#   #todo
+#   #todoSS
 # }
 
 # function selectFromTable
@@ -220,3 +222,4 @@ function clearTableScreen
   createTableMenu $1;
 }
 # _____ * _____ End of Table Menu Functions  _____ * _____ #
+createMainMenu;
