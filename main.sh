@@ -4,6 +4,7 @@
 # _____ * _____AH DATABASE MANAGMENT SYSTEM  _____ * _____ #
 
 # _____ * _____ MAIN SCRIPT  _____ * _____ #
+#Ayman Hafez Data base
 mkdir AHDB 2>> ./AHDB/.error.log
 clear
 echo "Welcome to AH-DBMS"
@@ -16,17 +17,11 @@ function createMainMenu
     echo -e "#_____ * _____ * Main Menu _____ * _____ #";
     
     echo "1) Create Database";
-
     echo "2) List Databases";
-
     echo "3) Connect To Databases";
-
     echo "4) Drop Database";
-
     echo "5) Exit";
-
     echo "===========================================";
-
     echo -e "Please Enter your choice: \c"
     read ch
     case $ch in
