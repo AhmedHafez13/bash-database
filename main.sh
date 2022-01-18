@@ -142,23 +142,78 @@ function createTableMenu
 
 # _____ * _____ Table Menu Functions  _____ * _____ #
 
-#a function that create a file for the table
-# function createTable
-# {
-#   #todo
-#   # notes-from-project-instructions:
-#     # 1- Ask about columns datatypes in create table and check on them in both insert and update
-#     # 2- Ask about primary key in create table and check for it in the insert into table
-#   echo -e "Please Enter Table Name: \c";
-#   read tableName;
-#   if [[ -f $tableName ]]
-#     echo "Sorry table already exists!!";
-#     createTableMenu $1;
-#   fi
-#   echo -e ""
-
-
-# }
+#a function that create a CSV file for the table 
+function createTable
+{
+  #todo
+  # notes-from-project-instructions:
+    # 1- Ask about columns datatypes in create table and check on them in both insert and update
+    # 2- Ask about primary key in create table and check for it in the insert into table
+  echo -e "Please Enter Table Name: \c";
+  read tableName;
+  if [[ -f $tableName ]]
+  then
+    echo "Sorry table already exists!!";
+    createTableMenu $1;
+  fi
+  echo -e "Please Enter the Number of Columns"
+  read numberOfColumns;
+  i=1;
+  separator=",";
+  rowSeparator="\n";
+  isPrimaryKey=0;
+  tableMetaData="ColumnName"$separator"Data-Type"$separator"key";
+  while [ $i -le $numberOfColumns ]
+  do
+    echo -e "Enter the Name of Column No $i: \c";
+    read columnName;
+    echo -e "Enter the dataType of Column $columnName: ";
+    select answer in "integer" "string"
+    do
+      case $answer in
+        integer ) dataType="INT"; break;;
+        string ) dataType="STRNG"; break;;
+        *) echo "Please Choose either Int nor string";
+      esac
+    done
+    if [[ $isPrimaryKey == 0 ]]
+    then
+      echo -e "Do you want to make $columnName primaryKey? "
+      select answer in "yes" "no"
+      do
+        case $answer in
+          yes ) 
+            isPrimaryKey=1;
+            tableMetaData+=$rowSeparator$columnName$separator$dataType$separator"PRIMARY KEY"; break;;
+          no )
+            tableMetaData+=$rowSeparator$columnName$separator$dataType$separator""; break;;
+          * ) echo "please choose either yes or no";
+        esac
+      done
+    else
+      tableMetaData+=$rowSeparator$columnName$separator$dataType$separator"";
+    fi
+    if [[ $i == $numberOfColumns ]]
+    then
+      tableActualData=$tableActualData$columnName
+    else
+      tableActualData=$tableActualData$columnName$separator
+    fi
+    ((i++))
+  done
+  touch .$tableName
+  echo -e $tableMetaData >> .$tableName
+  touch $tableName
+  echo -e $tableActualData >> $tableName
+  if [[ $? == 0 ]]
+  then
+    echo "Table $tableName Created Successfully";
+    createTableMenu $1;
+  else
+    echo "Undetermine error occur during creating table $tableName";
+    createTableMenu $1;
+  fi
+}
 
 # a function that list the tables in the database directory
 function listTables
@@ -173,7 +228,7 @@ function dropTable
   read tableName;
   if [[ -f $tableName ]]
   then
-    rm -rf ./$tableName 2>>./.error.log;
+    rm -rf ./$tableName ./.$tableName 2>>./.error.log;
     if [[ $? == 0 ]]
     then
       echo "$tableName Table Dropped Successfuly";
@@ -211,7 +266,7 @@ function dropTable
 function returnToMainMenu
 {
   clear;
-  cd ../../ 2>>./error.log;
+  cd ../../ 2>>./.error.log;
   createMainMenu;
 }
 
@@ -222,4 +277,10 @@ function clearTableScreen
   createTableMenu $1;
 }
 # _____ * _____ End of Table Menu Functions  _____ * _____ #
+
+
+# calling the  main menu function that start the script 
 createMainMenu;
+
+
+# @ All rights reserved to Ayman - Hafez - ITI - OS Track - Intake 42;
