@@ -15,4 +15,19 @@
 ### On creating new table
 - Check if the input for the name is valid before asking for columns count
 
+### In the `Database Menu`
+- When the user hits enter without input the `Main Menu` is displayed insted on database menu
+
+### Listing databases and tables
+- Add any prompt before the names of databases and tables
+    > for exampe the databases list should be like this
+    >
+    > \>> ITI_db
+    >
+    > \>> hello_words_db
+    >
+    > \>> database_3
+    >
+    > \>> the_forth_db
+
 
