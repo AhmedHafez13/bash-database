@@ -8,7 +8,7 @@
 # AHDB stands for => Ayman Hafez Data base
 mkdir ./AHDB 2>> ./.error.log
 clear
-echo "Welcome to AH-DBMS"
+echo "----- * ----- Welcome to AH-DBMS ----- * -----"
 
 # calling the mainMenu Function in the end of the script
 # _____ * _____ END OF MAIN SCRIPT  _____ * _____ #
@@ -172,7 +172,7 @@ function createTable
     do
       case $answer in
         integer ) dataType="INT"; break;;
-        string ) dataType="STRNG"; break;;
+        string ) dataType="STRING"; break;;
         *) echo "Please Choose either Int nor string";
       esac
     done
@@ -239,10 +239,15 @@ function dropTable
   createTableMenu $1;
 }
 
-# function insertIntoTable
-# {
-#   #todoSS
-# }
+function insertIntoTable
+{
+  echo -p "Enter the table name: " tableName
+  if [[ -f $tableName ]]
+  then
+    echo "($tableName) table does not exist"
+    listTables
+  fi
+}
 
 # function selectFromTable
 # {

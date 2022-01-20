@@ -1,2 +1,0 @@
-• On creating new database, check if `AHDB` directory exits first
-  => If `AHDB` directory does't exit, create it
