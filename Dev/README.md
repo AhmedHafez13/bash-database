@@ -1,6 +1,6 @@
 # Notes, TODOs and Bugs
 
-## Ayman Part
+## Ayman's Part
 
 ### On creating new database
 - Check if the input for the name is valid before creating the directory
@@ -15,7 +15,7 @@
 ### On creating new table
 - Check if the input for the name is valid before asking for columns count
 
-### In the `Database Menu`
+### `[CRITICAL]` In the `Database Menu`
 - When the user hits enter without input the `Main Menu` is displayed insted on database menu
 
 ### Listing databases and tables
@@ -29,5 +29,11 @@
     > \>> database_3
     >
     > \>> the_forth_db
+
+
+# Hafez's Part
+
+### On inserting new record in a table
+- Check if the string is empty
 
 
