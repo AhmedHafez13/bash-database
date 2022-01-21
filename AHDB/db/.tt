@@ -1,6 +1,0 @@
-ColumnName,Data-Type,key
-id,INT,PRIMARY KEY
-name,STRING,
-thirdCol,STRING,
-forthCol,STRING,
-fifthCol,STRING,
