@@ -254,7 +254,7 @@ function insertIntoTable
     if [[ -f ".$tableName" ]] # Check the metadata file
     then # The metadata file exists
       echo "Inserting into ($tableName)"
-      echo "-------------------------------"
+      echo "==========================================="
       columnsCount=`awk 'END{print NR}' .$tableName`
       recordArr=() # Create an array to store the record
       for n in `seq 2 $columnsCount`
@@ -264,13 +264,12 @@ function insertIntoTable
         columnKey=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$n') print $3}' .$tableName`
         let col=$n-1
         echo -e "Insert:$columnKey $columnName as [$columnType]> \c"
-        while read input
+        while read input # input for the column
         do
           if [[ $columnKey == $cPrimary ]]
-          then
-            # Check if the primary key is in the table
+          then # Check if the primary key is in the table
             pkCount=`awk -v col="$col" 'BEGIN{FS=","; NR=2; c=0;} {if ($col == "'$input'") c++;} END{print c;}' $tableName`
-            if [[ $pkCount == 1 ]]
+            if [[ $pkCount == 1 ]]  # The input already exists as primary key
             then
               echo "!!! Invalid input, the primary key is in use!"
               echo -e "Insert:$cPrimary $columnName as [$columnType]> \c"
@@ -298,30 +297,23 @@ function insertIntoTable
         done
       done
 
-      record=${recordArr[@]}    # Format the recored
-      record=${record// /$cSep} # Format the recored
+      record=${recordArr[@]}    # Format the recored "5 Ahmed 20"
+      record=${record// /$cSep} # Format the recored "5,Ahmed,20"
       echo $record >> $tableName
 
       echo "### A new record is successfully saved"
-
-      createTableMenu $1
-
     else # Can't file the metadata file
       echo "!!! The metadata for ($tableName) is corrupted, can not insert into this table"
-      createTableMenu $1
     fi
   else
     echo "($tableName) table does not exist, choose a table from the list"
     listTables
-    createTableMenu $1
   fi
+  createTableMenu $1
 }
 
 function selectFromTable
 {
-  # todo
-  # note-from-project-instructions:
-  # The Select of Rows displayed in screen/terminal in an Accepted/Good Format
   echo -e "Enter the table name: \c"
   read tableName
   if [[ -f $tableName ]]
@@ -330,7 +322,7 @@ function selectFromTable
     colArr=(${header//$cSep/ })
 
     echo "Choose columns seperated by space to select, or type 0 to select all"
-    echo "-------------------------------"
+    echo "==========================================="
     echo "0) select all columns"
     n=0   # count of columns
     for col in "${colArr[@]}"
@@ -342,10 +334,10 @@ function selectFromTable
     colNumbers=0
     selectedAll=0
 
-    while read -p "Insert columns> " colInput
+    while read -p "Selected columns> " colInput
     do
       colNumbers=(${colInput// / }) # splite with space
-      if [[ ${colNumbers[@]} ]]
+      if [[ ${colNumbers[@]} ]]     # Check if the array is not empty
       then
         for col in "${colNumbers[@]}"
         do
@@ -374,7 +366,7 @@ function selectFromTable
 
     echo ">> Enter a condition or leave it empty to ommit condition"
     echo ">> Condition must start with column number then operator then param"
-    echo "-------------------------------"
+    echo "==========================================="
     while read -p "Condition> " condition
     do
       condition=${condition//[[:blank:]]/}
@@ -396,8 +388,7 @@ function selectFromTable
       fi
 
       isValidCondition $condition $operator $n
-      isValid=$?
-      if [[ isValid -eq 1 ]]
+      if [[ $? -eq 1 ]]
       then
         applyCondition=1
         break
@@ -435,10 +426,74 @@ function selectFromTable
   createTableMenu $1    # Back to table options menu
 }
 
-# function deleteFromTable
-# {
-#   #todo
-# }
+function deleteFromTable
+{
+  echo -e "Enter the table name: \c"
+  read tableName
+  if [[ -f $tableName ]]
+  then
+    header=`awk '{if(NR==1) print $0}' $tableName`
+    colArr=(${header//$cSep/ })
+
+    echo "Enter condition on column"
+    echo "==========================================="
+    n=0   # count of columns
+    for col in "${colArr[@]}"
+    do
+      let n++
+      echo "$n) $col"
+    done
+
+    echo ">> Enter a condition to delete from ($tableName)"
+    echo ">> Condition must start with column number then operator then param"
+    echo "==========================================="
+    while read -p "Condition> " condition
+    do
+      condition=${condition//[[:blank:]]/}
+
+      # Get the operator from the condition
+      if [[ $condition =~ ">" ]]
+      then operator=">"
+      elif [[ $condition =~ "<" ]]
+      then operator="<"
+      elif [[ $condition =~ "=" ]]
+      then operator="="
+      else
+        echo "!!! Invalid condition"
+        continue
+      fi
+
+      isValidCondition $condition $operator $n
+      isValid=$?
+      if [[ isValid -eq 1 ]]
+      then
+        break
+      else
+        echo "!!! Invalid condition"
+      fi
+    done
+
+    arrIN=(${condition//$operator/ })
+    col=${arrIN[0]}
+    param=${arrIN[1]}
+
+    if [[ $operator == '=' ]] # invalidate '=' to '=='
+    then
+      operator='=='
+    fi
+
+    awk 'BEGIN{FS="'$cSep'"; OFS="'$cSep'"} {if (NR == 1 || !($'$col' '$operator' "'$param'")) {print $0}}' $tableName > .temp
+    cat .temp > $tableName
+    rm .temp 2>>./.error.log
+
+    echo "==========================================="
+    echo "Delete from $tableName successfully done"
+  else
+    echo "($tableName) table does not exist, choose a table from the list"
+    listTables
+  fi
+  createTableMenu $1    # Back to table options menu
+}
 
 function updateTable
 {
@@ -451,7 +506,7 @@ function updateTable
     colArr=(${header//$cSep/ })
 
     echo "Choose columns seperated by space to update"
-    echo "-------------------------------"
+    echo "==========================================="
     n=0   # count of columns
     for col in "${colArr[@]}"
     do
@@ -475,7 +530,7 @@ function updateTable
         do
           # Check if the col is number
           isNumber $col
-          if [[ $? -eq 0 ]] || [[ $col -lt 1 ]] || [[ $col -gt $n ]]
+          if [[ $? -eq 0 ]] || [[ $col -lt 2 ]] || [[ $col -gt $n ]]
           then
             echo "!!! Enter a valid input, out of bounds"
             continue 2
@@ -500,7 +555,7 @@ function updateTable
 
     echo ">> Enter a condition or leave it empty to ommit condition"
     echo ">> Condition must start with column number then operator then param"
-    echo "-------------------------------"
+    echo "==========================================="
     while read -p "Condition> " condition
     do
       condition=${condition//[[:blank:]]/}
@@ -522,8 +577,7 @@ function updateTable
       fi
 
       isValidCondition $condition $operator $n
-      isValid=$?
-      if [[ isValid -eq 1 ]]
+      if [[ $? -eq 1 ]]
       then
         applyCondition=1
         break
@@ -532,9 +586,8 @@ function updateTable
       fi
     done
 
-    # TODO
     echo "Updating ($tableName)"
-    echo "-------------------------------"
+    echo "==========================================="
     recordArr=()
     for colNum in $colInput # for every column number (col)
     do
