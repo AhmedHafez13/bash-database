@@ -1,0 +1,6 @@
+ColumnName,Data-Type,key
+id,INT,PRIMARY KEY
+name,STRING,
+col3,STRING,
+col4,STRING,
+col5,STRING,
