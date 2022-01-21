@@ -332,7 +332,7 @@ function selectFromTable
     echo "Choose columns seperated by space to select, or type 0 to select all"
     echo "-------------------------------"
     echo "0) select all columns"
-    n=0
+    n=0   # count of columns
     for col in "${colArr[@]}";
     do
       let n++
@@ -369,16 +369,67 @@ function selectFromTable
       break
     done
 
-    echo "==========================================="
-    if [[ selectedAll -eq 1 ]]
+    # Ask the user for select conditions
+    applyCondition=0
+
+    echo ">> Enter a condition or leave it empty to ommit condition"
+    echo ">> Condition must start with column number then operator then param"
+    echo "-------------------------------"
+    while read -p "Condition> " condition
+    do
+      condition=${condition//[[:blank:]]/}
+
+      # Get the operator from the condition
+      if [[ $condition =~ ">" ]]
+      then operator=">"
+      elif [[ $condition =~ "<" ]]
+      then operator="<"
+      elif [[ $condition =~ "=" ]]
+      then operator="="
+      elif [ -z "$condition" ] # Do not apply condition if empty
+      then
+        applyCondition=0
+        break
+      else
+        echo "!!! Invalid condition"
+        continue
+      fi
+
+      isValidCondition $condition $operator $n
+      isValid=$?
+      if [[ isValid -eq 1 ]]
+      then
+        applyCondition=1
+        break
+      else
+        echo "!!! Invalid condition"
+      fi
+    done
+
+    if [[ applyCondition -eq 1 ]]   # Select with condition
     then
-      column -t -s',' $tableName
-    else
-      echo "input: $colInput"
-      cut -d ',' -f "$colInput" $tableName | column -t -s','
+      arrIN=(${condition//$operator/ })
+      col=${arrIN[0]}
+      param=${arrIN[1]}
+
+      if [[ $operator == '=' ]] # invalidate '=' to '=='
+      then
+        operator='=='
+      fi
+
+      echo "==========================================="
+      awk 'BEGIN{FS="'$cSep'"} {if($'$col' '$operator' "'$param'" || NR==1) print $0}' $tableName | cut -d ',' -f "$colInput" | column -t -s','
+    else    # Select without condition
+      echo "==========================================="
+      if [[ selectedAll -eq 1 ]]
+      then
+        column -t -s',' $tableName
+      else
+        cut -d ',' -f "$colInput" $tableName | column -t -s','
+      fi
     fi
 
-    createTableMenu $1
+    createTableMenu $1    # Back to table options menu
   else
     echo "($tableName) table does not exist, choose a table from the list"
     listTables
@@ -420,6 +471,37 @@ isNumber(){
   then return 1
   else return 0
   fi
+}
+
+isValidCondition(){
+  condition=$1
+  operator=$2
+  colCount=$3
+
+  # Split condition parts
+  arrIN=(${condition//$operator/ })
+  col=${arrIN[0]}
+  param=${arrIN[1]}
+
+  # 1. Check if the col between 1 and colCount
+  isNumber $col
+  if [[ $? != 1 ]] || [[ col -lt 1 ]] || [[ col -gt colCount ]]
+  then return 0
+  fi
+
+  # 2. Check if the type is INT the param must be a number
+  let col+=1
+  columnType=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$col') print $2}' .$tableName`
+
+  if [[ $columnType == "INT" ]] # Check the param if its type is int
+  then
+    isNumber $param   # make sure the param is number
+    if [[ $? != 1 ]]
+    then return 0
+    fi
+  fi
+
+  return 1  # return 1 as whole the condition is valid
 }
 
 # calling the  main menu function that start the script 
