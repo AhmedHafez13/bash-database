@@ -1,7 +1,7 @@
 #! bin/bash
-# _____ * _____Bash DBMS  _____ * _____ #
+# _____ * _____ Bash DBMS  _____ * _____ #
 
-# _____ * _____AH DATABASE MANAGMENT SYSTEM  _____ * _____ #
+# _____ *  AH DATABASE MANAGMENT SYSTEM  * _____ #
 
 # _____ * _____ Globals  _____ * _____ #
 cSep=','
@@ -22,6 +22,7 @@ clear
 echo "#___ * ___ * Welcome to AH-DBMS * ___ * ___#"
 
 # calling the mainMenu Function in the end of the script
+
 # _____ * _____ END OF MAIN SCRIPT  _____ * _____ #
 
 # Create main Menu Function
@@ -154,7 +155,7 @@ function createTableMenu
       8)  clearTableScreen $1;;
       9)  returnToMainMenu ;;
       10)  exit ;;
-      *)  echo "Please select a correct number from the given menu";createMainMenu;
+      *)  echo "Please select a correct number from the given menu";createTableMenu $1;
     esac
 }
 
