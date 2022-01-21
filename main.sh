@@ -19,7 +19,8 @@ then
   mkdir ./AHDB 
 fi
 clear
-echo "Welcome to AH-DBMS"
+echo "#___ * ___ * Welcome to AH-DBMS * ___ * ___#"
+
 # calling the mainMenu Function in the end of the script
 # _____ * _____ END OF MAIN SCRIPT  _____ * _____ #
 
