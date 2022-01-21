@@ -35,12 +35,12 @@
 
 ## TODO List
 - ✔ `[DONE]` `insertIntoTable` function
-- 📌 `[START]` `selectFromTable` function
+- ✔ `[DONE]` `selectFromTable` function
     - ✔ `[DONE]` Selete all from table
     - ✔ `[DONE]` Select specific columns from table
-    - `[]` Select under condition from table
+    - ✔ `[DONE]` Select under condition from table
+- 📌 `[]` updateTable
 - `[]` deleteFromTable
-- `[]` updateTable
 
 ### On inserting new record in a table
 - Check if the string is empty
