@@ -322,8 +322,8 @@ function selectFromTable
   # todo
   # note-from-project-instructions:
   # The Select of Rows displayed in screen/terminal in an Accepted/Good Format
-  echo -e "Enter the table name: \c";
-  read tableName;
+  echo -e "Enter the table name: \c"
+  read tableName
   if [[ -f $tableName ]]
   then
     header=`awk '{if(NR==1) print $0}' $tableName`
@@ -333,7 +333,7 @@ function selectFromTable
     echo "-------------------------------"
     echo "0) select all columns"
     n=0   # count of columns
-    for col in "${colArr[@]}";
+    for col in "${colArr[@]}"
     do
       let n++
       echo "$n) $col"
@@ -347,7 +347,7 @@ function selectFromTable
       colNumbers=(${colInput// / }) # splite with space
       if [[ ${colNumbers[@]} ]]
       then
-        for col in "${colNumbers[@]}";
+        for col in "${colNumbers[@]}"
         do
           isNumber $col # Check if the input is number
           if [[ $? -eq 0 ]] || [[ $col -lt 0 ]] || [[ $col -gt $n ]]
@@ -428,13 +428,11 @@ function selectFromTable
         cut -d ',' -f "$colInput" $tableName | column -t -s','
       fi
     fi
-
-    createTableMenu $1    # Back to table options menu
   else
     echo "($tableName) table does not exist, choose a table from the list"
     listTables
-    createTableMenu $1
   fi
+  createTableMenu $1    # Back to table options menu
 }
 
 # function deleteFromTable
@@ -442,10 +440,175 @@ function selectFromTable
 #   #todo
 # }
 
-# function updateTable
-# {
-#   #todo
-# }
+function updateTable
+{
+  #todo
+  echo -e "Enter the table name: \c"
+  read tableName
+  if [[ -f $tableName ]]
+  then
+    header=`awk '{if(NR==1) print $0}' $tableName`
+    colArr=(${header//$cSep/ })
+
+    echo "Choose columns seperated by space to update"
+    echo "-------------------------------"
+    n=0   # count of columns
+    for col in "${colArr[@]}"
+    do
+      let ++n
+      let colNum=n+1
+      columnKey=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$colNum') print $3}' .$tableName`
+      if [[ $columnKey != $cPrimary ]]
+      then
+        echo "$n) $col"
+      fi
+    done
+
+    colInput=
+
+    while read -p "Insert columns> " colInput
+    do
+      #colNumbers=(${colInput// / }) # splite with space
+      if ! [[ -z $colInput ]]
+      then
+        for col in $colInput
+        do
+          # Check if the col is number
+          isNumber $col
+          if [[ $? -eq 0 ]] || [[ $col -lt 1 ]] || [[ $col -gt $n ]]
+          then
+            echo "!!! Enter a valid input, out of bounds"
+            continue 2
+          fi
+          # Check if the col is primary key
+          columnKey=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$col') print $3}' .$tableName`
+          if [[ $columnKey == cPrimary ]]
+          then
+            echo "!!! Enter a valid input, includes primary key"
+            continue 2
+          fi
+        done
+      else
+        echo "!!! Enter a valid input"
+        continue
+      fi
+      break
+    done
+
+    # Ask the user for select conditions
+    applyCondition=0
+
+    echo ">> Enter a condition or leave it empty to ommit condition"
+    echo ">> Condition must start with column number then operator then param"
+    echo "-------------------------------"
+    while read -p "Condition> " condition
+    do
+      condition=${condition//[[:blank:]]/}
+
+      # Get the operator from the condition
+      if [[ $condition =~ ">" ]]
+      then operator=">"
+      elif [[ $condition =~ "<" ]]
+      then operator="<"
+      elif [[ $condition =~ "=" ]]
+      then operator="="
+      elif [ -z "$condition" ] # Do not apply condition if empty
+      then
+        applyCondition=0
+        break
+      else
+        echo "!!! Invalid condition"
+        continue
+      fi
+
+      isValidCondition $condition $operator $n
+      isValid=$?
+      if [[ isValid -eq 1 ]]
+      then
+        applyCondition=1
+        break
+      else
+        echo "!!! Invalid condition"
+      fi
+    done
+
+    # TODO
+    echo "Updating ($tableName)"
+    echo "-------------------------------"
+    recordArr=()
+    for colNum in $colInput # for every column number (col)
+    do
+      let colNum++  # Add one to step over the header line
+      columnName=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$colNum') print $1}' .$tableName`
+      columnType=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$colNum') print $2}' .$tableName`
+      columnKey=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$colNum') print $3}' .$tableName`
+
+      echo -e "Update:$columnKey $columnName as [$columnType]> \c"
+      while read input
+      do
+        if [[ $columnType == $typeInt ]] # Invalidate integer
+        then
+          isNumber $input
+          if [[ $? == 1 ]]
+          then
+            recordArr[$colNum]=$input # Store the input
+            break
+          else
+            echo "!!! Invalid input, the datatype does not match!"
+            echo -e "Update:$cPrimary $columnName as [$columnType]> \c"
+            continue
+          fi
+        elif [[ $columnType == $typeString ]]
+        then
+          recordArr[$colNum]=$input # Store the input
+          break
+        fi
+      done
+    done
+
+    if [[ applyCondition -eq 1 ]]   # Select with condition
+    then
+      arrIN=(${condition//$operator/ })
+      col=${arrIN[0]}
+      param=${arrIN[1]}
+
+      if [[ $operator == '=' ]] # invalidate '=' to '=='
+      then
+        operator='=='
+      fi
+
+      colNumbers=(${colInput//\s/ })
+      let counter=0
+      for column in "${recordArr[@]}"
+      do
+        let colNum=${colNumbers[$counter]}
+        awk 'BEGIN{FS="'$cSep'"; OFS="'$cSep'"} {if (NR != 1 && $'$col' '$operator' "'$param'") {$'$colNum'="'$column'"} print $0}' $tableName > .temp
+        cat .temp > $tableName
+        let counter++
+      done
+
+      echo "==========================================="
+      awk 'BEGIN{FS="'$cSep'"} {if($'$col' '$operator' "'$param'" || NR==1) print $0}' $tableName | cut -d ',' -f "$colInput" | column -t -s','
+    else    # Select without condition
+      colNumbers=(${colInput//\s/ })
+      let counter=0
+      for column in "${recordArr[@]}"
+      do
+        let colNum=${colNumbers[$counter]}
+        awk 'BEGIN{FS="'$cSep'"; OFS="'$cSep'"} {if (NR != 1) {$'$colNum'="'$column'"} print $0}' $tableName > .temp
+        cat .temp > $tableName
+        let counter++
+      done
+
+      echo "==========================================="
+      cut -d ',' -f "$colInput" $tableName | column -t -s','
+    fi
+  else
+    echo "($tableName) table does not exist, choose a table from the list"
+    listTables
+  fi
+  createTableMenu $1
+}
 
 
 # A function that return to the main menu

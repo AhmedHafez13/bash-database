@@ -42,8 +42,8 @@
     - ✔ `[DONE]` Selete all from table
     - ✔ `[DONE]` Select specific columns from table
     - ✔ `[DONE]` Select under condition from table
-- 📌 `[]` updateTable
-- `[]` deleteFromTable
+- ✔ `[DONE]` updateTable
+- 📌 `[]` deleteFromTable
 
 ### On inserting new record in a table
 - Check if the string is empty
