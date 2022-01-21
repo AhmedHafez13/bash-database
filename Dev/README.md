@@ -44,6 +44,3 @@
 
 ### On inserting new record in a table
 - Check if the string is empty
-
-
---- 
