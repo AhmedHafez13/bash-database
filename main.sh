@@ -3,6 +3,12 @@
 
 # _____ * _____AH DATABASE MANAGMENT SYSTEM  _____ * _____ #
 
+# _____ * _____ Globals  _____ * _____ #
+cSep=','
+typeInt="INT"
+typeString="STRING"
+cPrimary="PRIMARY KEY"
+
 # _____ * _____ MAIN SCRIPT  _____ * _____ #
 
 # AHDB stands for => Ayman Hafez Data base
@@ -234,27 +240,151 @@ function dropTable
       echo "$tableName Table Dropped Successfuly";
     fi
   else
-    echo "Their is no Table with this Name!!";
+    echo "There is no Table with this Name!!";
   fi
   createTableMenu $1;
 }
 
 function insertIntoTable
 {
-  echo -p "Enter the table name: " tableName
+  echo -e "Enter the table name: \c";
+  read tableName;
   if [[ -f $tableName ]]
   then
-    echo "($tableName) table does not exist"
+    if [[ -f ".$tableName" ]] # Check the metadata file
+    then # The metadata file exists
+      echo "Inserting into ($tableName)"
+      echo "-------------------------------"
+      columnsCount=`awk 'END{print NR}' .$tableName`
+      recordArr=() # Create an array to store the record
+      for n in `seq 2 $columnsCount`
+      do
+        columnName=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$n') print $1}' .$tableName`
+        columnType=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$n') print $2}' .$tableName`
+        columnKey=`awk 'BEGIN{FS="'$cSep'"} {if(NR=='$n') print $3}' .$tableName`
+        let col=$n-1
+        echo -e "Insert:$columnKey $columnName as [$columnType]> \c"
+        while read input
+        do
+          if [[ $columnKey == $cPrimary ]]
+          then
+            # Check if the primary key is in the table
+            pkCount=`awk -v col="$col" 'BEGIN{FS=","; NR=2; c=0;} {if ($col == "'$input'") c++;} END{print c;}' $tableName`
+            if [[ $pkCount == 1 ]]
+            then
+              echo "!!! Invalid input, the primary key is in use!"
+              echo -e "Insert:$cPrimary $columnName as [$columnType]> \c"
+              continue
+            fi
+          fi
+
+          if [[ $columnType == $typeInt ]] # Invalidate integer
+          then
+            isNumber $input
+            if [[ $? == 1 ]]
+            then
+              recordArr[$col]=$input # Store the input
+              break
+            else
+              echo "!!! Invalid input, the datatype does not match!"
+              echo -e "Insert:$cPrimary $columnName as [$columnType]> \c"
+              continue
+            fi
+          elif [[ $columnType == $typeString ]]
+          then
+            recordArr[$col]=$input # Store the input
+            break
+          fi
+        done
+      done
+
+      record=${recordArr[@]}    # Format the recored
+      record=${record// /$cSep} # Format the recored
+      echo $record >> $tableName
+
+      echo "### A new record is successfully saved"
+
+      createTableMenu $1
+
+    else # Can't file the metadata file
+      echo "!!! The metadata for ($tableName) is corrupted, can not insert into this table"
+      createTableMenu $1
+    fi
+  else
+    echo "($tableName) table does not exist, choose a table from the list"
     listTables
+    createTableMenu $1
   fi
 }
 
-# function selectFromTable
-# {
-#   # todo
-#   # note-from-project-instructions:
-#   # The Select of Rows displayed in screen/terminal in an Accepted/Good Format
-# }
+function selectFromTable
+{
+  # todo
+  # note-from-project-instructions:
+  # The Select of Rows displayed in screen/terminal in an Accepted/Good Format
+  echo -e "Enter the table name: \c";
+  read tableName;
+  if [[ -f $tableName ]]
+  then
+    header=`awk '{if(NR==1) print $0}' $tableName`
+    colArr=(${header//$cSep/ })
+
+    echo "Choose columns seperated by space to select, or type 0 to select all"
+    echo "-------------------------------"
+    echo "0) select all columns"
+    n=0
+    for col in "${colArr[@]}";
+    do
+      let n++
+      echo "$n) $col"
+    done
+
+    colNumbers=0
+    selectedAll=0
+
+    while read -p "Insert columns> " colInput
+    do
+      colNumbers=(${colInput// / }) # splite with space
+      if [[ ${colNumbers[@]} ]]
+      then
+        for col in "${colNumbers[@]}";
+        do
+          isNumber $col # Check if the input is number
+          if [[ $? -eq 0 ]] || [[ $col -lt 0 ]] || [[ $col -gt $n ]]
+          then
+            echo "!!! Enter a valid input"
+            continue 2
+          else
+            if [[ $col -eq 0 ]]
+            then
+              let selectedAll=1
+              break 2
+            fi
+          fi
+        done
+      else
+        echo "!!! Enter a valid input"
+        continue
+      fi
+      break
+    done
+
+    echo "==========================================="
+    if [[ selectedAll -eq 1 ]]
+    then
+      column -t -s',' $tableName
+    else
+      echo "input: $colInput"
+      cut -d ',' -f "$colInput" $tableName | column -t -s','
+    fi
+
+    createTableMenu $1
+  else
+    echo "($tableName) table does not exist, choose a table from the list"
+    listTables
+    createTableMenu $1
+  fi
+}
 
 # function deleteFromTable
 # {
@@ -283,6 +413,14 @@ function clearTableScreen
 }
 # _____ * _____ End of Table Menu Functions  _____ * _____ #
 
+# _____ * _____ Helper Functions  _____ * _____ #
+isNumber(){
+  num=$1
+  if [[ "${num##*[!0-9]*}" ]]
+  then return 1
+  else return 0
+  fi
+}
 
 # calling the  main menu function that start the script 
 createMainMenu;
