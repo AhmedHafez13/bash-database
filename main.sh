@@ -12,10 +12,16 @@ cPrimary="PRIMARY KEY"
 # _____ * _____ MAIN SCRIPT  _____ * _____ #
 
 # AHDB stands for => Ayman Hafez Data base
-mkdir ./AHDB 2>> ./.error.log
+
+# Create the AHDB folder only if it's not exists
+if [[ ! -d AHDB ]]
+then
+  mkdir ./AHDB 
+fi
 clear
 echo "#___ * ___ * Welcome to AH-DBMS * ___ * ___#"
 
+echo "Welcome to AH-DBMS"
 # calling the mainMenu Function in the end of the script
 # _____ * _____ END OF MAIN SCRIPT  _____ * _____ #
 
@@ -52,22 +58,30 @@ function createDB
 {
   echo -e "Please Enter the database name: \c";
   read dbName;
-  mkdir ./AHDB/$dbName
-  if [[ $? == 0 ]]
+  
+  if [[ -d ./AHDB/$dbName ]]
   then
-    echo "$dbName Database Created Successfully";
+    echo "$dbName already exists!!";
   else
-    echo "Error Creating the database $dbName"; 
+    mkdir ./AHDB/$dbName 2>> ./.error.log
+    if [[ $? == 0 ]]
+    then
+      echo "$dbName Database Created Successfully";
+    else
+      echo "Error Creating the database $dbName"; 
+    fi
   fi
-  #echo "==========================================";
   createMainMenu;
 }
 
 # function to list the database
 function listDB
 {
-  ls ./AHDB; 
-  #echo "==========================================";
+  ls ./AHDB | awk '{ print ">>", $0 } 
+    END {
+      if (NR == 0)
+        print ">> You have not created any database yet!!"
+    }'
   createMainMenu;
 }
 
@@ -99,7 +113,6 @@ function dropDB
   else
     echo "$dbName dosn't exists!";
   fi
-  #echo "==========================================";
   createMainMenu;
 }
 
@@ -151,7 +164,6 @@ function createTableMenu
 #a function that create a CSV file for the table 
 function createTable
 {
-  #todo
   # notes-from-project-instructions:
     # 1- Ask about columns datatypes in create table and check on them in both insert and update
     # 2- Ask about primary key in create table and check for it in the insert into table
@@ -224,7 +236,11 @@ function createTable
 # a function that list the tables in the database directory
 function listTables
 {
-  ls .;
+  ls . | awk '{ print ">>", $0 } 
+    END {
+      if (NR == 0)
+        print ">> You have not created any tables yet!!"
+    }';
   createTableMenu $1;
 }
 
