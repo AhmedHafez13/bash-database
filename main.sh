@@ -425,7 +425,24 @@ function selectFromTable
       fi
 
       echo "==========================================="
-      awk 'BEGIN{FS="'$cSep'"} {if($'$col' '$operator' "'$param'" || NR==1) print $0}' $tableName | cut -d ',' -f "$colInput" | column -t -s','
+      if [[ $colInput == 0 ]]
+      then
+        isNumber $param
+        if [[ $? == 1 ]]
+        then
+          awk 'BEGIN{FS="'$cSep'"} {if($'$col' '$operator' '$param' || NR==1) print $0}' $tableName | column -t -s','
+        else
+          awk 'BEGIN{FS="'$cSep'"} {if($'$col' '$operator' "'$param'" || NR==1) print $0}' $tableName | column -t -s','
+        fi
+      else
+        isNumber $param
+        if [[ $? == 1 ]]
+        then
+          awk 'BEGIN{FS="'$cSep'"} {if($'$col' '$operator' '$param' || NR==1) print $0}' $tableName | cut -d ',' -f "$colInput" | column -t -s','
+        else
+          awk 'BEGIN{FS="'$cSep'"} {if($'$col' '$operator' "'$param'" || NR==1) print $0}' $tableName | cut -d ',' -f "$colInput" | column -t -s','
+        fi
+      fi
     else    # Select without condition
       echo "==========================================="
       if [[ selectedAll -eq 1 ]]
@@ -498,7 +515,13 @@ function deleteFromTable
       operator='=='
     fi
 
-    awk 'BEGIN{FS="'$cSep'"; OFS="'$cSep'"} {if (NR == 1 || !($'$col' '$operator' "'$param'")) {print $0}}' $tableName > .temp
+    isNumber $param
+    if [[ $? == 1 ]]
+    then
+      awk 'BEGIN{FS="'$cSep'"; OFS="'$cSep'"} {if (NR == 1 || !($'$col' '$operator' '$param')) {print $0}}' $tableName > .temp
+    else
+      awk 'BEGIN{FS="'$cSep'"; OFS="'$cSep'"} {if (NR == 1 || !($'$col' '$operator' "'$param'")) {print $0}}' $tableName > .temp
+    fi
     cat .temp > $tableName
     rm .temp 2>>./.error.log
 

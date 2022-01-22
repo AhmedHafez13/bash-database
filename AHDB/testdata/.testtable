@@ -1,0 +1,7 @@
+ColumnName,Data-Type,key
+id,INT,PRIMARY KEY
+first_name,STRING,
+last_name,STRING,
+email,STRING,
+gender,STRING,
+ip_address,STRING,
